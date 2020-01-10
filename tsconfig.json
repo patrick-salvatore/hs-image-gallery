@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "plugins": [{ "name": "typescript-tslint-plugin" }],
+    "outDir": "./dist",
+    "sourceMap": true,
+    "baseUrl": "src",
+    "target": "es5",
+    "declaration": false,
+    "lib": ["dom", "es2015"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react",
+    "typeRoots": ["node_modules/@types"]
+    // "types": []
+  },
+  "exclude": [
+    "./node_modules",
+    "./public",
+    "./dist",
+    "./.vscode",
+    "**/*.test.ts"
+  ],
+  "include": ["<rootDir>/src/__test__/test-setup.ts", "./src/**/**/*"]
+}
+
