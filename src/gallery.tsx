@@ -120,7 +120,6 @@ const Gallery: React.SFC = () => {
 
   return (
     <>
-      <h1>Health Star Images</h1>
       {imageStore.map((collection, colIdx) => (
         <div key={colIdx} className="imgSection__wrapper">
           <div className="imgSection_header">{collection.name || ''}</div>
