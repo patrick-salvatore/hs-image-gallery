@@ -63,7 +63,7 @@ module.exports = {
     ],
     'no-param-reassign': 'off',
     // react
-    'react/prop-types': [1],
+    'react/prop-types': [0],
     // 'react/no-array-index-key': [2],
     '@typescript-eslint/interface-name-prefix': [0],
     '@typescript-eslint/no-explicit-any': [0]
