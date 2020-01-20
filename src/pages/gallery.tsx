@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { render } from 'react-dom';
-import { Popup } from './components/popup/popup';
-import './scss/index.scss';
+import { Popup } from '../components/popup/popup';
+import '../scss/index.scss';
 
-import img1 from './img/1.jpg';
-import img2 from './img/2.jpg';
-import img3 from './img/3.jpg';
-import img4 from './img/4.jpg';
-import img5 from './img/5.jpg';
-import img6 from './img/6.jpg';
-import img7 from './img/7.jpg';
-import img8 from './img/8.jpg';
+import img1 from '../img/1.jpg';
+import img2 from '../img/2.jpg';
+import img3 from '../img/3.jpg';
+import img4 from '../img/4.jpg';
+import img5 from '../img/5.jpg';
+import img6 from '../img/6.jpg';
+import img7 from '../img/7.jpg';
+import img8 from '../img/8.jpg';
 
 const imageStore = [
   {
@@ -28,7 +27,7 @@ const imageStore = [
   },
 ];
 
-const Gallery: React.SFC = () => {
+export const Gallery: React.FC = () => {
   const [currImage, setCurrImage] = useState();
   const [imageOpen, setImageOpen] = useState(false);
 
@@ -153,6 +152,3 @@ const Gallery: React.SFC = () => {
     </>
   );
 };
-
-const galleryRoot = document.getElementById('img-gallery--root');
-if (galleryRoot) render(<Gallery />, galleryRoot);

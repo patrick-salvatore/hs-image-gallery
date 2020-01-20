@@ -36,7 +36,7 @@ interface IPopupProps {
   handleBackClick: (e: React.MouseEvent) => void;
 }
 
-export const Popup: React.SFC<IPopupProps> = ({
+export const Popup: React.FC<IPopupProps> = ({
   data: {
     imgData: { src, name, desc },
     isFirst,
