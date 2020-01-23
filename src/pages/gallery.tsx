@@ -119,28 +119,30 @@ export const Gallery: React.FC = () => {
 
   return (
     <>
-      {imageStore.map((collection, colIdx) => (
-        <div key={colIdx} className="imgSection__wrapper">
-          <div className="imgSection_header">{collection.name || ''}</div>
-          <div className="imgSection_images">
-            {collection.store.map((img, imgIdx) => (
-              <div
-                key={imgIdx}
-                className="imgSection_images-img"
-                onClick={handleImageClick}
-                data-img={`${colIdx}-${imgIdx}`}
-              >
-                <img
-                  className="img"
+      <>
+        {imageStore.map((collection, colIdx) => (
+          <div key={colIdx} className="imgSection__wrapper">
+            <div className="imgSection_header">{collection.name || ''}</div>
+            <div className="imgSection_images">
+              {collection.store.map((img, imgIdx) => (
+                <div
+                  key={imgIdx}
+                  className="imgSection_images-img"
+                  onClick={handleImageClick}
                   data-img={`${colIdx}-${imgIdx}`}
-                  src={img.src}
-                  alt={img.name}
-                />
-              </div>
-            ))}
+                >
+                  <img
+                    className="img"
+                    data-img={`${colIdx}-${imgIdx}`}
+                    src={img.src}
+                    alt={img.name}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </>
       {imageOpen && (
         <Popup
           closePopUp={closePopUp}
