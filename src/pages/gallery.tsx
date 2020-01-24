@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { Popup } from '../components/popup/popup';
+import Loader from 'react-loader-spinner';
+import gql from 'graphql-tag';
+import { useQuery } from '@apollo/react-hooks';
+
 import '../scss/index.scss';
 
 import img1 from '../img/1.jpg';
@@ -27,9 +31,16 @@ const imageStore = [
   },
 ];
 
+// const testQuery = gql`
+//   {
+//     files
+//   }
+// `;
+
 export const Gallery: React.FC = () => {
   const [currImage, setCurrImage] = useState();
   const [imageOpen, setImageOpen] = useState(false);
+  const { loading, error, data } = useQuery(testQuery);
 
   const isFirstImage = (imgIdx): boolean => {
     if (imgIdx === 0) {
@@ -117,6 +128,8 @@ export const Gallery: React.FC = () => {
     setCurrImage(prevState);
   };
 
+  console.log(data);
+
   return (
     <>
       <>
@@ -143,6 +156,7 @@ export const Gallery: React.FC = () => {
           </div>
         ))}
       </>
+      <></>
       {imageOpen && (
         <Popup
           closePopUp={closePopUp}
@@ -151,6 +165,7 @@ export const Gallery: React.FC = () => {
           handleBackClick={handleBackClick}
         />
       )}
+      {loading && <Loader type="Oval" color="#000" height={60} width={60} />}
     </>
   );
 };

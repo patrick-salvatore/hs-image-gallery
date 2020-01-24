@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Loader from 'react-loader-spinner';
 import gql from 'graphql-tag';
@@ -10,8 +10,9 @@ import {
 } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpload } from '@fortawesome/free-solid-svg-icons';
-import { useQuery, useMutation } from '@apollo/react-hooks';
+import { useMutation } from '@apollo/react-hooks';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
+import { useAlert } from 'react-alert';
 
 library.add(faUpload);
 
@@ -24,16 +25,16 @@ const UploadFileMutation = gql`
   }
 `;
 
-const testQuery = gql`
-  {
-    hello
-  }
-`;
-
-export const Upload: React.FC = (props): JSX.Element => {
+export const Upload: React.FC = (): JSX.Element => {
   const [fileCatalogName, setFileCatalogName] = useState<string>('');
-  const { loading, error, data } = useQuery(testQuery);
+  const [buttonDisplayState, setButtonDisplayState] = useState<boolean>(false);
   const [_uploadFileMutaton, res] = useMutation(UploadFileMutation);
+  const alert = useAlert();
+
+  const onDrop = (): void => {
+    setButtonDisplayState(true);
+  };
+
   const {
     acceptedFiles,
     rejectedFiles,
@@ -42,9 +43,10 @@ export const Upload: React.FC = (props): JSX.Element => {
   } = useDropzone({
     accept: 'image/jpeg, image/png',
     multiple: true,
+    onDropAccepted: onDrop,
   });
 
-  const uploadFiles = () => {
+  const uploadFiles = (): void => {
     _uploadFileMutaton({
       variables: { files: acceptedFiles, category: fileCatalogName },
     });
@@ -56,16 +58,20 @@ export const Upload: React.FC = (props): JSX.Element => {
   };
 
   const acceptedFilesItems = acceptedFiles.map(file => (
-    <li key={file.path}>
-      <strong>{file.path}</strong> - {file.size} bytes
+    <li key={file.name}>
+      <strong>{file.name}</strong> - {file.size} bytes
     </li>
   ));
 
   const rejectedFilesItems = rejectedFiles.map(file => (
-    <li key={file.path}>
-      <strong>{file.path}</strong> - {file.size} bytes
+    <li key={file.name}>
+      <strong>{file.name}</strong> - {file.size} bytes
     </li>
   ));
+
+  if (res.data) {
+    alert.success('File Upload: Success!');
+  }
 
   return (
     <div
@@ -119,35 +125,33 @@ export const Upload: React.FC = (props): JSX.Element => {
         placeholder="Category Name"
         onChange={setCatalogName}
       ></input>
-      <div>
-        <aside>
-          <h4>Accepted files</h4>
-          <ol>{acceptedFilesItems}</ol>
-          <h4>Rejected files</h4>
-          <ol>{rejectedFilesItems}</ol>
-        </aside>
-      </div>
-      {/* <Loader
-        type="Oval"
-        color="#000"
-        height={60}
-        width={60}
-        // timeout={3000} //3 secs
-      /> */}
-      <button
-        style={{
-          marginTop: '20px',
-          width: '400px',
-          height: '30px',
-          backgroundColor: 'black',
-          color: 'white',
-          border: '1px solid',
-        }}
-        onClick={uploadFiles}
-        disabled={acceptedFiles.length && fileCatalogName.length ? false : true}
-      >
-        Upload
-      </button>
+      {res.loading ? (
+        <Loader type="Oval" color="#000" height={60} width={60} />
+      ) : (
+        <div>
+          <aside>
+            <h4>Accepted files</h4>
+            <ol>{acceptedFilesItems}</ol>
+            <h4>Rejected files</h4>
+            <ol>{rejectedFilesItems}</ol>
+          </aside>
+        </div>
+      )}
+      {buttonDisplayState && fileCatalogName && (
+        <button
+          style={{
+            marginTop: '20px',
+            width: '400px',
+            height: '30px',
+            backgroundColor: 'black',
+            color: 'white',
+            border: '1px solid',
+          }}
+          onClick={uploadFiles}
+        >
+          Upload
+        </button>
+      )}
     </div>
   );
 };

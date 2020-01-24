@@ -8,7 +8,7 @@ export const typeDefs = gql`
 
   type Query {
     hello: String
-    files: ImageFile
+    files: String
   }
 
   type Mutation {

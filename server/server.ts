@@ -21,6 +21,10 @@ import { existsSync, mkdirSync } from 'fs';
     res.sendFile(path.resolve('./dist', 'gallery.html'));
   });
 
+  app.get('/imgFileStore', (req, res) => {
+    res.sendFile(path.resolve('../imgFileStore.json'));
+  });
+
   existsSync(path.join(__dirname, './img')) ||
     mkdirSync(path.join(__dirname, './img'));
 
