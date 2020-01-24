@@ -13,6 +13,14 @@ import { existsSync, mkdirSync } from 'fs';
   const app = express();
   const server = new ApolloServer({ typeDefs, resolvers });
 
+  existsSync(path.join(__dirname, './img')) ||
+    mkdirSync(path.join(__dirname, './img'));
+
+  app.use(cors());
+  app.use(express.static('./dist'));
+  app.use('/graphql', bodyParser.json());
+  app.use('/img', express.static(path.join(__dirname, './img')));
+
   app.get('/upload', (req, res) => {
     res.sendFile(path.resolve('./dist', 'upload.html'));
   });
@@ -21,17 +29,9 @@ import { existsSync, mkdirSync } from 'fs';
     res.sendFile(path.resolve('./dist', 'gallery.html'));
   });
 
-  app.get('/imgFileStore', (req, res) => {
-    res.sendFile(path.resolve('../imgFileStore.json'));
+  app.get('/api/imgFileStore', (req, res) => {
+    res.sendFile(path.resolve(__dirname, './imgFileStore.json'));
   });
-
-  existsSync(path.join(__dirname, './img')) ||
-    mkdirSync(path.join(__dirname, './img'));
-
-  app.use(cors());
-  app.use(express.static('./dist'));
-  app.use('/graphql', bodyParser.json());
-  app.use('/img', express.static(path.join(__dirname, './img')));
 
   server.applyMiddleware({ app });
   app.listen(PORT, () => console.log(`server running @ PORT:${PORT} 🚀`));

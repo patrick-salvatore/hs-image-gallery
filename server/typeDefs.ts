@@ -2,16 +2,17 @@
 import { gql } from 'apollo-server-express';
 
 export const typeDefs = gql`
-  type ImageFile {
-    name: [String]
+  type BasicResponse {
+    success: Boolean
+    message: String
   }
 
   type Query {
     hello: String
-    files: String
+    files: BasicResponse
   }
 
   type Mutation {
-    uploadFile(files: Upload!, category: String!): Boolean
+    uploadFile(files: Upload!, category: String!): BasicResponse
   }
 `;

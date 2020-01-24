@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from 'react-dom';
-import { Gallery } from './pages/gallery';
+import Gallery from './pages/gallery';
 import { Upload } from './pages/upload';
 import { ApolloProvider } from '@apollo/react-hooks';
 import ApolloClient from 'apollo-client';
@@ -35,7 +35,9 @@ const upload = (
 
 const gallery = (
   <ApolloProvider client={client}>
-    <Gallery />
+    <Provider template={AlertTemplate} {...alertPositions}>
+      <Gallery />
+    </Provider>
   </ApolloProvider>
 );
 

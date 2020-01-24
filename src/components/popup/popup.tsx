@@ -65,7 +65,11 @@ export const Popup: React.FC<IPopupProps> = ({
             size="2x"
           />
           <div className="popUp__contents--img__wrapper">
-            <img className="popUp__contents--img" src={src} alt={name} />
+            <img
+              className="popUp__contents--img"
+              src={`http://localhost:4000/img/${src}`}
+              alt={name}
+            />
             <p className="popUp__contents--desc">{desc || ''}</p>
           </div>
           <FontAwesomeIcon

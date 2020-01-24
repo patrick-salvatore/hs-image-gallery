@@ -1,5 +1,5 @@
-import imagemin from 'imagemin';
-import imageminPngquant from 'imagemin-pngquant';
+// import imagemin from 'imagemin';
+// import imageminPngquant from 'imagemin-pngquant';
 import {
   createWriteStream,
   existsSync,
@@ -8,30 +8,32 @@ import {
   readFile,
 } from 'fs';
 import Path from 'path';
+import crypto from 'crypto';
 
-const files = {};
+const _filesStore = {};
 
-// const compressFiles = () => {};
-
-const writeToFileStore = category => {
-  const json = JSON.stringify(files);
+const writeToFileDB = category => {
+  const json = JSON.stringify(_filesStore);
   const jsonPath = Path.join(__dirname, './imgFileStore.json');
 
   if (existsSync(jsonPath)) {
     readFile(jsonPath, 'utf8', (err, data) => {
       if (err) {
         console.error(err);
+        throw new Error('read file path error');
       } else {
         const currStore = JSON.parse(data);
-
         if (currStore[category]) {
-          currStore[category] = [...files[category], ...currStore[category]];
+          currStore[category] = [
+            ..._filesStore[category],
+            ...currStore[category],
+          ];
         } else {
-          currStore[category] = [...files[category]];
+          currStore[category] = [..._filesStore[category]];
         }
 
         const newStore: string = JSON.stringify(currStore);
-        writeFile('imgFileStore.json', newStore, 'utf8', err => {
+        writeFile(jsonPath, newStore, 'utf8', err => {
           console.error(err);
         });
       }
@@ -40,7 +42,7 @@ const writeToFileStore = category => {
     return;
   }
 
-  writeFile('imgFileStore.json', json, 'utf8', err => {
+  writeFile(jsonPath, json, 'utf8', err => {
     console.error(err);
   });
 
@@ -59,25 +61,48 @@ export const resolvers = {
       existsSync(Path.join(__dirname, './img', category)) ||
         mkdirSync(Path.join(__dirname, './img', category));
 
-      files[category] = [];
+      _filesStore[category] = [];
 
-      for (let i = 0; i < files.length; i++) {
-        const { createReadStream, filename } = await files[i];
-        new Promise((resolve, reject) =>
-          createReadStream()
-            .pipe(
-              createWriteStream(
-                Path.join(__dirname, './img', category, filename)
+      try {
+        for (let i = 0; i < files.length; i++) {
+          console.log(files[i].width);
+          const { createReadStream, filename } = await files[i];
+          const splitArr = filename.split('.');
+          const fileExt = splitArr[splitArr.length - 1] || '.png';
+          const hashedName = crypto
+            .createHash('md5')
+            .update(filename)
+            .digest('hex');
+          const hashedFileName = `${hashedName}.${fileExt}`;
+
+          new Promise((resolve, reject) =>
+            createReadStream()
+              .pipe(
+                createWriteStream(
+                  Path.join(__dirname, './img', category, hashedFileName)
+                )
               )
-            )
-            .on('finish', resolve)
-            .on('error', reject)
-        );
+              .on('finish', resolve)
+              .on('error', reject)
+          );
 
-        files[category].push(`${category}/${filename}`);
+          _filesStore[category].push({
+            src: `${category}/${hashedFileName}`,
+            alt: `${hashedFileName}`,
+          });
+        }
+        writeToFileDB(category);
+
+        return {
+          success: true,
+          message: 'Your Files have successfully been uploaded',
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: err,
+        };
       }
-
-      writeToFileStore(category);
     },
   },
 };

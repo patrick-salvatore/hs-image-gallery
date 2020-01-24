@@ -21,7 +21,10 @@ const uploadIconDefinition: IconDefinition = findIconDefinition(uploadLookup);
 
 const UploadFileMutation = gql`
   mutation uploadFile($files: Upload!, $category: String!) {
-    uploadFile(files: $files, category: $category)
+    uploadFile(files: $files, category: $category) {
+      success
+      message
+    }
   }
 `;
 
@@ -70,7 +73,11 @@ export const Upload: React.FC = (): JSX.Element => {
   ));
 
   if (res.data) {
-    alert.success('File Upload: Success!');
+    alert.success('Your Files have successfully been uploaded');
+  }
+
+  if (res.error) {
+    alert.error(res.error.message);
   }
 
   return (

@@ -1,46 +1,25 @@
 import React, { useState } from 'react';
 import { Popup } from '../components/popup/popup';
 import Loader from 'react-loader-spinner';
-import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
-
+import { useFetch } from '../hooks/useFetch';
+import { useAlert } from 'react-alert';
+import {
+  LazyLoadImage,
+  trackWindowScroll,
+} from 'react-lazy-load-image-component';
 import '../scss/index.scss';
 
-import img1 from '../img/1.jpg';
-import img2 from '../img/2.jpg';
-import img3 from '../img/3.jpg';
-import img4 from '../img/4.jpg';
-import img5 from '../img/5.jpg';
-import img6 from '../img/6.jpg';
-import img7 from '../img/7.jpg';
-import img8 from '../img/8.jpg';
-
-const imageStore = [
-  {
-    name: 'january',
-    store: [
-      { src: img1, name: 'test' },
-      { src: img2, name: 'test' },
-      { src: img3, name: 'test' },
-      { src: img4, name: 'test' },
-      { src: img5, name: 'test' },
-      { src: img6, name: 'test' },
-      { src: img7, name: 'test' },
-      { src: img8, name: 'test' },
-    ],
-  },
-];
-
-// const testQuery = gql`
-//   {
-//     files
-//   }
-// `;
-
-export const Gallery: React.FC = () => {
+const Gallery = ({ scrollPosition }): JSX.Element => {
   const [currImage, setCurrImage] = useState();
   const [imageOpen, setImageOpen] = useState(false);
-  const { loading, error, data } = useQuery(testQuery);
+  const { isBusy, error, rawRes } = useFetch(
+    'http://localhost:4000/api/imgFileStore',
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+  const alert = useAlert();
 
   const isFirstImage = (imgIdx): boolean => {
     if (imgIdx === 0) {
@@ -50,8 +29,8 @@ export const Gallery: React.FC = () => {
     return false;
   };
 
-  const isLastImage = (imgIdx, sectionIdx): boolean => {
-    if (imgIdx === imageStore[sectionIdx].store.length - 1) {
+  const isLastImage = (imgIdx, collection): boolean => {
+    if (imgIdx === rawRes[collection].length - 1) {
       return true;
     }
 
@@ -62,20 +41,23 @@ export const Gallery: React.FC = () => {
     e.preventDefault();
     const [sectionIdx, imgIdx] =
       e.target.getAttribute('data-img').split('-') || [];
-    const imgData = imageStore[sectionIdx].store[imgIdx] || {};
+    const collection = e.target.getAttribute('data-collection');
+
+    const imgData = rawRes[collection][imgIdx] || {};
     const newState = {
       imgData,
       isFirst: true,
       isLast: true,
       sectionIdx: parseInt(sectionIdx),
       imgIdx: parseInt(imgIdx),
+      collection,
     };
 
     if (parseInt(imgIdx) !== 0) {
       newState.isFirst = false;
     }
 
-    if (parseInt(imgIdx) !== imageStore[sectionIdx].store.length - 1) {
+    if (parseInt(imgIdx) !== rawRes[collection].length - 1) {
       newState.isLast = false;
     }
 
@@ -90,8 +72,9 @@ export const Gallery: React.FC = () => {
 
   const handleNextClick = (e: React.MouseEvent): void => {
     e.preventDefault();
-    const { sectionIdx, imgIdx } = currImage;
-    const currStore = imageStore[sectionIdx].store;
+    const { sectionIdx, imgIdx, collection } = currImage;
+
+    const currStore = rawRes[collection];
     const nextImgIdx = currStore[imgIdx + 1] && imgIdx + 1;
     const nextImgData = currStore[nextImgIdx];
     const nextState = {
@@ -100,18 +83,19 @@ export const Gallery: React.FC = () => {
       isLast: false,
       sectionIdx,
       imgIdx: nextImgIdx,
+      collection,
     };
 
     nextState.isFirst = isFirstImage(nextImgIdx);
-    nextState.isLast = isLastImage(nextImgIdx, sectionIdx);
+    nextState.isLast = isLastImage(nextImgIdx, collection);
 
     setCurrImage(nextState);
   };
 
   const handleBackClick = (e: React.MouseEvent): void => {
     e.preventDefault();
-    const { sectionIdx, imgIdx } = currImage;
-    const currStore = imageStore[sectionIdx].store;
+    const { sectionIdx, imgIdx, collection } = currImage;
+    const currStore = rawRes[collection];
     const prevImgIdx = currStore[imgIdx - 1] && imgIdx - 1;
     const prevImgData = currStore[prevImgIdx];
     const prevState = {
@@ -120,43 +104,59 @@ export const Gallery: React.FC = () => {
       isLast: false,
       sectionIdx,
       imgIdx: prevImgIdx,
+      collection,
     };
 
     prevState.isFirst = isFirstImage(prevImgIdx);
-    prevState.isLast = isLastImage(prevImgIdx, sectionIdx);
+    prevState.isLast = isLastImage(prevImgIdx, collection);
 
     setCurrImage(prevState);
   };
 
-  console.log(data);
+  if (error) {
+    alert.error('No Images Present');
+    return <></>;
+  }
+
+  if (!Object.keys(rawRes)) {
+    alert.error('No Images Present');
+    return <></>;
+  }
 
   return (
     <>
       <>
-        {imageStore.map((collection, colIdx) => (
+        {Object.keys(rawRes).map((collection, colIdx) => (
           <div key={colIdx} className="imgSection__wrapper">
-            <div className="imgSection_header">{collection.name || ''}</div>
+            <div className="imgSection_header">{collection || ''}</div>
             <div className="imgSection_images">
-              {collection.store.map((img, imgIdx) => (
-                <div
-                  key={imgIdx}
-                  className="imgSection_images-img"
-                  onClick={handleImageClick}
-                  data-img={`${colIdx}-${imgIdx}`}
-                >
-                  <img
-                    className="img"
+              {rawRes[collection].map(
+                (
+                  img: { src: any; name: string | undefined },
+                  imgIdx: string | number | undefined
+                ) => (
+                  <div
+                    key={imgIdx}
+                    className="imgSection_images-img"
+                    onClick={handleImageClick}
                     data-img={`${colIdx}-${imgIdx}`}
-                    src={img.src}
-                    alt={img.name}
-                  />
-                </div>
-              ))}
+                    data-collection={collection}
+                  >
+                    <LazyLoadImage
+                      scrollPosition={scrollPosition}
+                      className="img"
+                      data-collection={collection}
+                      data-img={`${colIdx}-${imgIdx}`}
+                      src={`http://localhost:4000/img/${img.src}`}
+                      alt={img.name}
+                    />
+                  </div>
+                )
+              )}
             </div>
           </div>
         ))}
       </>
-      <></>
       {imageOpen && (
         <Popup
           closePopUp={closePopUp}
@@ -165,7 +165,21 @@ export const Gallery: React.FC = () => {
           handleBackClick={handleBackClick}
         />
       )}
-      {loading && <Loader type="Oval" color="#000" height={60} width={60} />}
+      {(isBusy || !rawRes) && (
+        <div
+          style={{
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Loader type="Oval" color="red" height={300} width={300} />
+        </div>
+      )}
     </>
   );
 };
+
+export default trackWindowScroll(Gallery);
